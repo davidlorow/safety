@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Global Safety Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --base-padding: 5px;
+            /* Reduced for compactness */
+            --base-margin: 5px;
+            /* Reduced for compactness */
+            --primary-green: #47950B;
+            --orlando-color: #3498db;
+            --rochester-color: #e74c3c;
+            --shanghai-color: #f39c12;
+            --ostfildern-color: #9b59b6;
+            --header-text: #2c3e50;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: transparent;
+            height: auto;
+            /* Fit content for iframe embedding */
+            display: block;
+            /* Changed to block to avoid centering issues in iframe */
+            padding: 10px;
+            /* Reduced padding */
+            color: var(--header-text);
+            overflow: hidden;
+            /* Prevent scrolling */
+        }
+
+        .container {
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e7ec 100%);
+			border-radius: 16px;
+			overflow: hidden;
+			width: 100%;
+            max-width: none;
+            /* Remove max-width for full iframe width */
+            padding: 0;
+            text-align: center;
+			min-height: 82vh;
+			display: flex;
+			flex-direction: column;
+			justify-content: center;
+			box-shadow: 0 4px 15px rgba(0,0,0,.10);
+        }
+
+        .header {
+            margin-bottom: var(--base-margin);
+            padding: var(--base-padding);
+        }
+
+        h1 {
+            font-size: clamp(1.2em, 3vw, 2.5em);
+            /* Smaller responsive header */
+            text-transform: uppercase;
+            margin-bottom: var(--base-margin);
+            color: var(--header-text);
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+            letter-spacing: 1px;
+        }
+
+        .locations-container {
+            display: flex;
+            flex-direction: row;
+            /* Force one row */
+            justify-content: center;
+            gap: 10px;
+            /* Reduced gap for compactness */
+            margin-top: var(--base-margin);
+        }
+
+        .location-card {
+            background: white;
+            border-radius: 10px;
+            /* Smaller radius */
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+            /* Smaller shadow */
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            flex: 0 0 calc(25% - 7.5px);
+            /* Four columns in one row, accounting for gap */
+            max-width: calc(25% - 7.5px);
+        }
+
+        .location-card:hover {
+            transform: translateY(-5px);
+            /* Smaller hover effect */
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .location-header {
+            padding: var(--base-padding);
+            color: white;
+            font-size: clamp(1em, 2vw, 1.5em);
+            /* Smaller responsive header */
+            font-weight: bold;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .location-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            /* Smaller */
+        }
+
+        .orlando .location-header {
+            background: linear-gradient(135deg, var(--orlando-color), #1d6fa5);
+        }
+
+        .orlando .location-header::before {
+            background: #1a5276;
+        }
+
+        .rochester .location-header {
+            background: linear-gradient(135deg, var(--rochester-color), #c0392b);
+        }
+
+        .rochester .location-header::before {
+            background: #922b21;
+        }
+
+        .shanghai .location-header {
+            background: linear-gradient(135deg, var(--shanghai-color), #e67e22);
+        }
+
+        .shanghai .location-header::before {
+            background: #b06a0e;
+        }
+
+        .ostfildern .location-header {
+            background: linear-gradient(135deg, var(--ostfildern-color), #8e44ad);
+        }
+
+        .ostfildern .location-header::before {
+            background: #6c3483;
+        }
+
+        .counter-container {
+            padding: var(--base-padding);
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .counter-box {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            border-radius: 10px;
+            /* Smaller */
+            padding: var(--base-padding);
+            margin: 0 auto 10px;
+            /* Reduced margin */
+            width: 100%;
+            max-width: none;
+            /* Full width of card */
+            border: 1px solid #e0e0e0;
+            box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.05);
+            /* Smaller shadow */
+        }
+
+        .counter-label,
+        .days-label,
+        .safety-statement {
+            font-size: clamp(1em, 1.5vw, 1.2em);
+            /* Smaller responsive labels */
+        }
+
+        .counter-label {
+            margin-bottom: 5px;
+            /* Reduced */
+            color: #555;
+            font-weight: 500;
+        }
+
+        .days-label {
+            font-weight: 600;
+            color: #444;
+            margin-top: 5px;
+            /* Reduced */
+        }
+
+        .safety-statement {
+            font-weight: 600;
+            padding: var(--base-padding);
+            color: var(--primary-green);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 10px;
+            /* Reduced */
+            text-align: center;
+            font-size: clamp(1.2em, 2vw, 1.5em);
+            /* Adjusted for merged statement */
+        }
+
+        .counter {
+            font-size: clamp(2em, 5vw, 3em);
+            /* Smaller responsive counter */
+            font-weight: 800;
+            display: inline-block;
+            padding: 5px 10px;
+            /* Reduced */
+            margin: 5px 0;
+            /* Reduced */
+            border-radius: 8px;
+            /* Smaller */
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+            /* Smaller */
+            width: 100%;
+            max-width: none;
+            /* Full width */
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #ffffff, #f0f0f0);
+            border: 1px solid #ddd;
+            animation: pulse 2s infinite;
+        }
+
+        .merged-safety {
+            margin-top: var(--base-margin);
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.02);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .local-time-container {
+            margin-top: 10px;
+            padding: 5px;
+            font-size: clamp(0.8em, 1.5vw, 1.1em);
+            color: #555;
+            background-color: #f0f2f5;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Global Safety Dashboard</h1>
+        </div>
+
+        <div class="locations-container">
+            <!-- Orlando -->
+            <div class="location-card orlando">
+                <div class="location-header">Orlando, USA</div>
+                <div class="counter-container">
+                    <div>
+                        <div class="counter-box">
+                            <div class="counter-label">We have worked</div>
+                            <div class="counter" id="days-orlando">0</div>
+                            <div class="days-label">days</div>
+                        </div>
+                        <!-- Remove hidden will show local-time-container -->
+                        <div hidden class="local-time-container" id="time-orlando"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Rochester -->
+            <div class="location-card rochester">
+                <div class="location-header">Rochester, USA</div>
+                <div class="counter-container">
+                    <div>
+                        <div class="counter-box">
+                            <div class="counter-label">We have worked</div>
+                            <div class="counter" id="days-rochester">0</div>
+                            <div class="days-label">days</div>
+                        </div>
+                        <!-- Remove hidden will show local-time-container -->
+                        <div hidden class="local-time-container" id="time-rochester"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Shanghai -->
+            <div class="location-card shanghai">
+                <div class="location-header">Shanghai, China</div>
+                <div class="counter-container">
+                    <div>
+                        <div class="counter-box">
+                            <div class="counter-label">We have worked</div>
+                            <div class="counter" id="days-shanghai">0</div>
+                            <div class="days-label">days</div>
+                        </div>
+                        <!-- Remove hidden will show local-time-container -->
+                        <div hidden class="local-time-container" id="time-shanghai"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ostfildern -->
+            <div class="location-card ostfildern">
+                <div class="location-header">Ostfildern, Germany</div>
+                <div class="counter-container">
+                    <div>
+                        <div class="counter-box">
+                            <div class="counter-label">We have worked</div>
+                            <div class="counter" id="days-ostfildern">0</div>
+                            <div class="days-label">days</div>
+                        </div>
+                        <!-- Remove hidden will show local-time-container -->
+                        <div hidden class="local-time-container" id="time-ostfildern"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="merged-safety">
+            <div class="safety-statement">Without a Recordable Incident</div>
+        </div>
+
+    </div>
+
+    <script>
+        // --- Define the start date for each location ---
+        // ISO 8601 date strings and time zones
+        const locationData = {
+            orlando: { id: 'days-orlando', timeId: 'time-orlando', timeZone: 'America/New_York', startDate: '2026-07-29' },
+            rochester: { id: 'days-rochester', timeId: 'time-rochester', timeZone: 'America/New_York', startDate: '2019-02-15' },
+            shanghai: { id: 'days-shanghai', timeId: 'time-shanghai', timeZone: 'Asia/Shanghai', startDate: '2026-03-20' },
+            ostfildern: { id: 'days-ostfildern', timeId: 'time-ostfildern', timeZone: 'Europe/Berlin', startDate: '2012-01-05' },
+        };
+
+        /**
+         * Based on Unix timestamps, calculate the number of workdays between two dates through iteration.
+         * @param {string} startDateStr - Start date string "YYYY-MM-DD"
+         * @param {string} endDateStr - End date string "YYYY-MM-DD"
+         * @returns {number} Total workdays
+         */
+        function calculateWorkdays(startDateStr, endDateStr) {
+            // Create a UTC-based Date object to avoid local timezone affecting iteration
+            const start = new Date(startDateStr + 'T00:00:00Z');
+            const end = new Date(endDateStr + 'T00:00:00Z');
+            
+            /**
+             * By manually appending T00:00:00Z, we force all browsers to parse this date string as midnight in UTC time. 
+             * The Z stands for Zulu, which represents UTC. 
+             * This is a "normalization" operation: we convert both startDateStr and endDateStr into a standard, unified, 
+             * timezone-independent point in time (UTC midnight). 
+             * This allows us to perform loops and comparisons based on this reliable benchmark.
+             */
+
+            if (end < start) return 0;
+
+            let workdays = 0;
+            let current = new Date(start);
+
+            while (current <= end) {
+                // getUTCDay() return 0 (Sunday) - 6 (Saturday)
+                const dayOfWeek = current.getUTCDay();
+
+                if (dayOfWeek !== 0 && dayOfWeek !== 6) {
+                    workdays++;
+                }
+
+                // Move forward one day
+                current.setUTCDate(current.getUTCDate() + 1);
+            }
+
+            return workdays;
+        }
+
+        // --- Data Acquisition and Update ---
+        function getFormattedDateTime(timeZone) {
+            const now = new Date();
+            const options = {
+                timeZone: timeZone,
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: false
+            };
+            return new Intl.DateTimeFormat('sv-SE', options).format(now);
+        }
+
+        // Update all counters and time
+        function updateAll() {
+            for (const key in locationData) {
+                const loc = locationData[key];
+
+                // 1. Update local time display
+                const dateTimeString = getFormattedDateTime(loc.timeZone);
+                document.getElementById(loc.timeId).textContent = dateTimeString;
+
+                // 2. Update safety days
+                // Extract the date portion from a complete time string "YYYY-MM-DD"
+                const currentDateStr = dateTimeString.split(' ')[0];
+
+                const days = calculateWorkdays(loc.startDate, currentDateStr);
+                document.getElementById(loc.id).textContent = days;
+            }
+        }
+
+        updateAll();
+        // Set timers
+        setInterval(updateAll, 1800000); // Update every 1800 second to ensure the clock ticks and the date flips in a timely manner.
+    </script>
+</body>
+
+</html>
